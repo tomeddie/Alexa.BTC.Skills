@@ -15,14 +15,6 @@ const Alexa = require('alexa-sdk');
 const APP_ID = undefined;  // TODO replace with your app ID (OPTIONAL).
 
 var https = require('https');
- 
-//2.
-var extServerOptions = {
-    host: 'http://www.bitstamp.net',
-    port: '80',
-    path: 'http://www.bitstamp.net/api/ticker/',
-    method: 'GET'
-};
 
 const languageStrings = {
     'en-GB': {
@@ -39,7 +31,9 @@ const languageStrings = {
         translation: {
             SKILL_NAME: 'Bit coin price',
             GET_PRICE_MESSAGE: 'The current Bit coin price is ',
-            GET_PRICE_MONEY: " dollars",
+            GET_PRICE_MONEY: " dollars ",
+            GET_PRICE_AND: " and ",
+            GET_PRICE_CENTS: " cents ",
             ERROR_UNKNOWN: 'unknown.  Please try again later.',
             HELP_MESSAGE: 'You can say what is the current bit coin price, or, you can say exit... What can I help you with?',
             HELP_REPROMPT: 'What can I help you with?',
@@ -60,8 +54,16 @@ const handlers = {
               console.log('Returned from makeBTCRequest');
               if (err === null) {
                   console.log('No error so output');
-                  var message = locthis.t('GET_PRICE_MESSAGE') + btcResponse.last + locthis.t('GET_PRICE_MONEY'); 
-                  locthis.emit(':tell', message);
+                  var res = btcResponse.last.split(".");
+                  if (res[0] !== null) {
+                    var message = locthis.t('GET_PRICE_MESSAGE') + res[0] + locthis.t('GET_PRICE_MONEY');
+                    message += locthis.t('GET_PRICE_AND') + res[1] + locthis.t('GET_PRICE_CENTS');
+                    locthis.emit(':tell', message);    
+                  }
+                  else {
+                      locthis.emit(':tell', locthis.t('ERROR_MESSAGE'));
+                  }
+                  
               }
               else
               {
