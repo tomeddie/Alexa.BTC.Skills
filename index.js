@@ -20,8 +20,16 @@ const languageStrings = {
     'en-GB': {
         translation: {
             SKILL_NAME: 'Bit coin price',
-            GET_PRICE_MESSAGE: "The current Bit coin price is ",
-            GET_PRICE_MONEY: " pounds",
+            GET_PRICE_MESSAGE: "The current Bit coin price in U S dollars is ",
+            GET_PRICE_MONEY: " dollars ",
+            GET_PRICE_AND: " and ",
+            GET_PRICE_CENTS: " cents.",
+            NO_CHANGE_SINCE_OPEN: "  There is no change in bit coin's price today.",
+            TODAY_CHANGE_UP: "  It is up ",
+            TODAY_CHANGE_DOWN: " It is down ",
+            TODAY_PERCENT: " percent today",
+            TODAY_SHUCKS: ".  Maybe I should hold my bitcoin.",
+            TODAY_YIPPIE: ".  To the Moon.",
             HELP_MESSAGE: 'You can say what is the current bit coin price, or, you can say exit... What can I help you with?',
             HELP_REPROMPT: 'What can I help you with?',
             STOP_MESSAGE: 'Goodbye!',
@@ -30,10 +38,16 @@ const languageStrings = {
     'en-US': {
         translation: {
             SKILL_NAME: 'Bit coin price',
-            GET_PRICE_MESSAGE: 'The current Bit coin price is ',
+            GET_PRICE_MESSAGE: 'The current Bit coin price in U S dollars is ',
             GET_PRICE_MONEY: " dollars ",
             GET_PRICE_AND: " and ",
-            GET_PRICE_CENTS: " cents ",
+            GET_PRICE_CENTS: " cents.",
+            NO_CHANGE_SINCE_OPEN: "  There is no change in bit coin's price today.",
+            TODAY_CHANGE_UP: "  It is up ",
+            TODAY_CHANGE_DOWN: " It is down ",
+            TODAY_PERCENT: " percent today",
+            TODAY_SHUCKS: ".  Maybe I should hold my bitcoin.",
+            TODAY_YIPPIE: ".  To the Moon.",
             ERROR_UNKNOWN: 'unknown.  Please try again later.',
             HELP_MESSAGE: 'You can say what is the current bit coin price, or, you can say exit... What can I help you with?',
             HELP_REPROMPT: 'What can I help you with?',
@@ -58,6 +72,17 @@ const handlers = {
                   if (res[0] !== null) {
                     var message = locthis.t('GET_PRICE_MESSAGE') + res[0] + locthis.t('GET_PRICE_MONEY');
                     message += locthis.t('GET_PRICE_AND') + res[1] + locthis.t('GET_PRICE_CENTS');
+                    
+                    if (btcResponse.last > btcResponse.open) {
+                        var up =  Math.round((1-(btcResponse.open/btcResponse.last))*100);
+                        message += locthis.t('TODAY_CHANGE_UP') + up + locthis.t('TODAY_PERCENT') + locthis.t('TODAY_YIPPIE');
+                    } else if (btcResponse.last == btcResponse.open) {
+                        message += locthis.t('NO_CHANGE_SINCE_OPEN');
+                    } else {
+                        var down =  Math.round((1-(btcResponse.last/btcResponse.open))*100);
+                        message += locthis.t('TODAY_CHANGE_DOWN') + down + locthis.t('TODAY_PERCENT') + locthis.t('TODAY_SHUCKS');
+                    }
+                    console.log(message);
                     locthis.emit(':tell', message);    
                   }
                   else {
@@ -91,7 +116,7 @@ const handlers = {
 
 function makeBTCRequest(localthis, btcResponseCallback) {
 
-    var endpoint = 'https://www.bitstamp.net/api/ticker/';
+    var endpoint = 'https://www.bitstamp.net/api/v2/ticker/btcusd/';
     console.log('Calling http.get');
     https.get(endpoint, function (res) {
         var btcResponseString = '';
